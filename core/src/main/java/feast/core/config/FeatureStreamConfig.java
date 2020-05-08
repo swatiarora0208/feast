@@ -17,10 +17,11 @@
 package feast.core.config;
 
 import com.google.common.base.Strings;
-import feast.core.config.FeastProperties.StreamProperties;
-import feast.core.model.Source;
+import feast.proto.core.SourceProto;
 import feast.proto.core.SourceProto.KafkaSourceConfig;
 import feast.proto.core.SourceProto.SourceType;
+import feast.core.config.FeastProperties.StreamProperties;
+import feast.core.model.Source;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -75,12 +76,15 @@ public class FeatureStreamConfig {
             throw new RuntimeException(e.getMessage(), e);
           }
         }
+
         KafkaSourceConfig sourceConfig =
             KafkaSourceConfig.newBuilder()
                 .setBootstrapServers(bootstrapServers)
                 .setTopic(topicName)
                 .build();
-        return new Source(featureStreamType, sourceConfig, true);
+        SourceProto.Source source =
+            SourceProto.Source.newBuilder().setKafkaSourceConfig(sourceConfig).build();
+        return Source.fromProto(source, true);
       default:
         throw new RuntimeException("Unsupported source stream, only [KAFKA] is supported");
     }

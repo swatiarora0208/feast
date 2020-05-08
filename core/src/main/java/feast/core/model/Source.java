@@ -16,15 +16,12 @@
  */
 package feast.core.model;
 
-import com.google.common.collect.Sets;
-import com.google.protobuf.Message;
 import feast.proto.core.SourceProto;
 import feast.proto.core.SourceProto.KafkaSourceConfig;
 import feast.proto.core.SourceProto.Source.Builder;
 import feast.proto.core.SourceProto.SourceType;
 import io.grpc.Status;
 import java.util.Objects;
-import java.util.Set;
 import javax.persistence.*;
 import javax.persistence.Entity;
 import lombok.Getter;
@@ -35,8 +32,6 @@ import lombok.Setter;
 @Entity
 @Table(name = "sources")
 public class Source {
-
-  private static final Set<String> KAFKA_OPTIONS = Sets.newHashSet("bootstrapServers");
 
   /** Source Id */
   @Id @GeneratedValue private long id;
@@ -112,39 +107,12 @@ public class Source {
   }
 
   /**
-   * Get the options for this feature source
-   *
-   * @return feature source options
-   */
-  public Message getOptions() {
-    switch (SourceType.valueOf(type)) {
-      case KAFKA:
-        return KafkaSourceConfig.newBuilder()
-            .setBootstrapServers(bootstrapServers)
-            .setTopic(topics)
-            .build();
-      case UNRECOGNIZED:
-      default:
-        throw new RuntimeException("Unable to convert source to proto");
-    }
-  }
-
-  /**
    * Get the type of source.
    *
    * @return SourceType of this feature source
    */
   public SourceType getType() {
     return SourceType.valueOf(type);
-  }
-
-  /**
-   * Indicate whether to use the system defaults or not.
-   *
-   * @return boolean indicating whether this feature set source uses defaults.
-   */
-  public boolean isDefault() {
-    return isDefault;
   }
 
   /**

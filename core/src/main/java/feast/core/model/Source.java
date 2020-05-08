@@ -25,12 +25,12 @@ import feast.proto.core.SourceProto.SourceType;
 import io.grpc.Status;
 import java.util.Objects;
 import java.util.Set;
-import javax.persistence.Column;
+import javax.persistence.*;
 import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import lombok.Getter;
 import lombok.Setter;
 
+@Getter
 @Setter
 @Entity
 @Table(name = "sources")
@@ -38,9 +38,8 @@ public class Source {
 
   private static final Set<String> KAFKA_OPTIONS = Sets.newHashSet("bootstrapServers");
 
-  @Id
-  @Column(name = "id", updatable = false, nullable = false)
-  private String id;
+  /** Source Id */
+  @Id @GeneratedValue private long id;
 
   // Type of the source. Should map to feast.types.Source.SourceType
   @Column(name = "type", nullable = false)
@@ -113,15 +112,6 @@ public class Source {
   }
 
   /**
-   * Get the id for this feature source
-   *
-   * @return feature source id in the format TYPE/options
-   */
-  public String getId() {
-    return id;
-  }
-
-  /**
    * Get the options for this feature source
    *
    * @return feature source options
@@ -180,16 +170,6 @@ public class Source {
       case UNRECOGNIZED:
       default:
         return false;
-    }
-  }
-
-  private String generateId() {
-    switch (SourceType.valueOf(type)) {
-      case KAFKA:
-        return String.format("KAFKA/%s/%s", bootstrapServers, topics);
-      default:
-        // should not occur
-        return "";
     }
   }
 

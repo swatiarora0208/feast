@@ -120,7 +120,7 @@ public class Source {
         } catch (TextFormat.ParseException e) {
           throw new RuntimeException(
               String.format(
-                  "Unable to convert source to proto for source configuration: %s",
+                  "Unable to deserialize source configuration from String to KafkaSourceConfig: %s",
                   this.getConfig()),
               e);
         }
@@ -130,8 +130,8 @@ public class Source {
       default:
         throw new RuntimeException(
             String.format(
-                "Unable to convert source to proto for source configuration: %s",
-                this.getConfig()));
+                "Unable to build Source from configuration and type: %s %s",
+                this.getConfig(), this.getType()));
     }
   }
 

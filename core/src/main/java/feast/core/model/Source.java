@@ -46,14 +46,6 @@ public class Source {
   @Column(name = "type", nullable = false)
   private String type;
 
-  // Bootstrap servers, comma delimited. Used by kafka sources.
-  @Column(name = "bootstrap_servers")
-  private String bootstrapServers;
-
-  // Topics to listen to, comma delimited. Used by kafka sources.
-  @Column(name = "topics")
-  private String topics;
-
   @Column(name = "is_default")
   private boolean isDefault;
 

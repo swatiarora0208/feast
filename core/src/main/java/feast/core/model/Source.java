@@ -153,7 +153,7 @@ public class Source {
       return false;
     }
 
-    return this.getConfig().equals(other.getConfig());
+    return this.getConfig().equals(other.getConfig()) && this.getType().equals(other.getType());
   }
 
   @Override
@@ -170,7 +170,7 @@ public class Source {
 
   @Override
   public int hashCode() {
-    return Objects.hash(id);
+    return Objects.hash(getType(), getConfig());
   }
 
   /**

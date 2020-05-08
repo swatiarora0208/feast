@@ -43,7 +43,7 @@ public class Source {
   @Column(name = "type", nullable = false)
   private SourceType type;
 
-  /** Configuration object specific to each store type */
+  /** Configuration object specific to each source type */
   @Column(name = "config", nullable = false)
   @Lob
   private byte[] config;

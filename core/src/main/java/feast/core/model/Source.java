@@ -173,6 +173,11 @@ public class Source {
     return Objects.hash(id);
   }
 
+  /**
+   * Returns the type of this Source in String format
+   *
+   * @return Source type in String format
+   */
   public String getTypeString() {
     return this.getType().getValueDescriptor().getName();
   }

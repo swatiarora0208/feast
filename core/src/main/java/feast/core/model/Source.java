@@ -62,6 +62,7 @@ public class Source {
    * @return Source facade object
    */
   public static Source fromProto(SourceProto.Source sourceSpec, boolean isDefault) {
+
     if (sourceSpec.equals(SourceProto.Source.getDefaultInstance())) {
       Source source = new Source();
       source.setDefault(true);
@@ -116,7 +117,6 @@ public class Source {
         KafkaSourceConfig.Builder kafkaSourceConfig = KafkaSourceConfig.newBuilder();
         try {
           com.google.protobuf.TextFormat.getParser().merge(this.getConfig(), kafkaSourceConfig);
-
         } catch (TextFormat.ParseException e) {
           throw new RuntimeException(
               String.format(

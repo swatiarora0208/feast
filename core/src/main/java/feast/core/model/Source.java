@@ -16,13 +16,12 @@
  */
 package feast.core.model;
 
-import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.TextFormat;
 import feast.proto.core.SourceProto;
 import feast.proto.core.SourceProto.KafkaSourceConfig;
 import feast.proto.core.SourceProto.Source.Builder;
 import feast.proto.core.SourceProto.SourceType;
 import io.grpc.Status;
-import java.util.Arrays;
 import java.util.Objects;
 import javax.persistence.*;
 import javax.persistence.Entity;
@@ -45,8 +44,7 @@ public class Source {
 
   /** Configuration object specific to each source type */
   @Column(name = "config", nullable = false)
-  @Lob
-  private byte[] config;
+  private String config;
 
   @Column(name = "is_default")
   private boolean isDefault;
@@ -82,7 +80,7 @@ public class Source {
                   "Unsupported source options. Kafka source requires bootstrap servers and topic to be specified.")
               .asRuntimeException();
         }
-        source.setConfig(sourceSpec.getKafkaSourceConfig().toByteArray());
+        source.setConfig(sourceSpec.getKafkaSourceConfig().toString());
         break;
       case UNRECOGNIZED:
       default:
@@ -113,18 +111,17 @@ public class Source {
   public SourceProto.Source toProto() {
     Builder builder = SourceProto.Source.newBuilder().setType(this.getType());
 
-    byte[] config = this.getConfig();
-
     switch (this.getType()) {
       case KAFKA:
-        KafkaSourceConfig kafkaSourceConfig = null;
+        KafkaSourceConfig.Builder kafkaSourceConfig = KafkaSourceConfig.newBuilder();
         try {
-          kafkaSourceConfig = KafkaSourceConfig.parseFrom(config);
-        } catch (InvalidProtocolBufferException e) {
+          com.google.protobuf.TextFormat.getParser().merge(this.getConfig(), kafkaSourceConfig);
+
+        } catch (TextFormat.ParseException e) {
           throw new RuntimeException(
               String.format(
                   "Unable to convert source to proto for source configuration: %s",
-                  this.getConfig().toString()),
+                  this.getConfig()),
               e);
         }
         return builder.setKafkaSourceConfig(kafkaSourceConfig).build();
@@ -134,7 +131,7 @@ public class Source {
         throw new RuntimeException(
             String.format(
                 "Unable to convert source to proto for source configuration: %s",
-                this.getConfig().toString()));
+                this.getConfig()));
     }
   }
 
@@ -156,7 +153,7 @@ public class Source {
       return false;
     }
 
-    return Arrays.equals(this.getConfig(), other.getConfig());
+    return this.getConfig().equals(other.getConfig());
   }
 
   @Override

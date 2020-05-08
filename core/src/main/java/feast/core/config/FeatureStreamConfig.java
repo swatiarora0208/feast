@@ -83,7 +83,10 @@ public class FeatureStreamConfig {
                 .setTopic(topicName)
                 .build();
         SourceProto.Source source =
-            SourceProto.Source.newBuilder().setKafkaSourceConfig(sourceConfig).build();
+            SourceProto.Source.newBuilder()
+                .setType(SourceType.KAFKA)
+                .setKafkaSourceConfig(sourceConfig)
+                .build();
         return Source.fromProto(source, true);
       default:
         throw new RuntimeException("Unsupported source stream, only [KAFKA] is supported");

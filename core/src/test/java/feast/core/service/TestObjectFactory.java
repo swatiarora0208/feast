@@ -29,11 +29,14 @@ import java.util.List;
 public class TestObjectFactory {
 
   public static Source defaultSource =
-      new Source(
-          SourceProto.SourceType.KAFKA,
-          SourceProto.KafkaSourceConfig.newBuilder()
-              .setBootstrapServers("kafka:9092")
-              .setTopic("my-topic")
+      Source.fromProto(
+          SourceProto.Source.newBuilder()
+              .setType(SourceProto.SourceType.KAFKA)
+              .setKafkaSourceConfig(
+                  SourceProto.KafkaSourceConfig.newBuilder()
+                      .setBootstrapServers("kafka:9092")
+                      .setTopic("my-topic")
+                      .build())
               .build(),
           true);
 

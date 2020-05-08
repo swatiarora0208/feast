@@ -29,7 +29,7 @@ import org.springframework.stereotype.Repository;
 public interface JobRepository extends JpaRepository<Job, String> {
   List<Job> findByStatusNotIn(Collection<JobStatus> statuses);
 
-  List<Job> findBySourceIdAndStoreNameOrderByLastUpdatedDesc(String sourceId, String storeName);
+  List<Job> findBySourceIdAndStoreNameOrderByLastUpdatedDesc(Long sourceId, String storeName);
 
   // find jobs by feast store name
   List<Job> findByStoreName(String storeName);

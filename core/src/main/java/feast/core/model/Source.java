@@ -175,4 +175,8 @@ public class Source {
   public int hashCode() {
     return Objects.hash(id);
   }
+
+  public String getTypeString() {
+    return this.getType().getValueDescriptor().getName();
+  }
 }

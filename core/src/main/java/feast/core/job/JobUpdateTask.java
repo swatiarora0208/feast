@@ -116,7 +116,7 @@ public class JobUpdateTask implements Callable<Job> {
   }
 
   private Job createJob() {
-    String jobId = createJobId(source.getId(), store.getName());
+    String jobId = createJobId(source.getTypeString(), store.getName());
     return startJob(jobId);
   }
 
@@ -170,10 +170,9 @@ public class JobUpdateTask implements Callable<Job> {
     return job;
   }
 
-  String createJobId(String sourceId, String storeName) {
+  String createJobId(String sourceType, String storeName) {
     String dateSuffix = String.valueOf(Instant.now().toEpochMilli());
-    String sourceIdTrunc = sourceId.split("/")[0].toLowerCase();
-    String jobId = String.format("%s-to-%s", sourceIdTrunc, storeName) + dateSuffix;
+    String jobId = String.format("%s-to-%s", sourceType.toLowerCase(), storeName) + dateSuffix;
     return jobId.replaceAll("_", "-");
   }
 

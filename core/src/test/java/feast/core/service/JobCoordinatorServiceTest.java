@@ -38,6 +38,8 @@ import feast.core.job.Runner;
 import feast.core.model.FeatureSet;
 import feast.core.model.Job;
 import feast.core.model.JobStatus;
+import feast.core.model.Source;
+import feast.core.model.Store;
 import feast.proto.core.CoreServiceProto.ListFeatureSetsRequest.Filter;
 import feast.proto.core.CoreServiceProto.ListFeatureSetsResponse;
 import feast.proto.core.CoreServiceProto.ListStoresResponse;
@@ -86,7 +88,12 @@ public class JobCoordinatorServiceTest {
     when(specService.listStores(any())).thenReturn(ListStoresResponse.newBuilder().build());
     JobCoordinatorService jcs =
         new JobCoordinatorService(
-            jobRepository, featureSetRepository, sourceRepository, specService, jobManager, feastProperties);
+            jobRepository,
+            featureSetRepository,
+            sourceRepository,
+            specService,
+            jobManager,
+            feastProperties);
     jcs.Poll();
     verify(jobRepository, times(0)).saveAndFlush(any());
   }
@@ -107,7 +114,12 @@ public class JobCoordinatorServiceTest {
         .thenReturn(ListFeatureSetsResponse.newBuilder().build());
     JobCoordinatorService jcs =
         new JobCoordinatorService(
-            jobRepository, featureSetRepository, sourceRepository, specService, jobManager, feastProperties);
+            jobRepository,
+            featureSetRepository,
+            sourceRepository,
+            specService,
+            jobManager,
+            feastProperties);
     jcs.Poll();
     verify(jobRepository, times(0)).saveAndFlush(any());
   }
@@ -130,6 +142,7 @@ public class JobCoordinatorServiceTest {
                     .setBootstrapServers("servers:9092")
                     .build())
             .build();
+    Source source = Source.fromProto(sourceSpec);
 
     FeatureSetProto.FeatureSet featureSetSpec1 =
         FeatureSetProto.FeatureSet.newBuilder()
@@ -159,7 +172,7 @@ public class JobCoordinatorServiceTest {
             "",
             "",
             Runner.DATAFLOW,
-            feast.core.model.Source.fromProto(sourceSpec),
+            source,
             feast.core.model.Store.fromProto(storeSpec),
             Arrays.asList(featureSet1, featureSet2),
             JobStatus.PENDING);
@@ -169,13 +182,16 @@ public class JobCoordinatorServiceTest {
             "some_id",
             extId,
             Runner.DATAFLOW,
-            feast.core.model.Source.fromProto(sourceSpec),
+            source,
             feast.core.model.Store.fromProto(storeSpec),
             Arrays.asList(featureSet1, featureSet2),
             JobStatus.RUNNING);
 
     when(featureSetRepository.findAllByNameLikeAndProject_NameLikeOrderByNameAsc("%", "project1"))
         .thenReturn(Lists.newArrayList(featureSet1, featureSet2));
+    when(sourceRepository.findFirstByTypeAndConfigOrderByIdAsc(
+            source.getType(), source.getConfig()))
+        .thenReturn(source);
     when(specService.listStores(any()))
         .thenReturn(ListStoresResponse.newBuilder().addStore(storeSpec).build());
 
@@ -184,7 +200,12 @@ public class JobCoordinatorServiceTest {
 
     JobCoordinatorService jcs =
         new JobCoordinatorService(
-            jobRepository, featureSetRepository, sourceRepository, specService, jobManager, feastProperties);
+            jobRepository,
+            featureSetRepository,
+            sourceRepository,
+            specService,
+            jobManager,
+            feastProperties);
     jcs.Poll();
     verify(jobRepository, times(1)).saveAll(jobArgCaptor.capture());
     List<Job> actual = jobArgCaptor.getValue();
@@ -209,6 +230,7 @@ public class JobCoordinatorServiceTest {
                     .setBootstrapServers("servers:9092")
                     .build())
             .build();
+    Source source1 = Source.fromProto(source1Spec);
     SourceProto.Source source2Spec =
         SourceProto.Source.newBuilder()
             .setType(SourceType.KAFKA)
@@ -218,6 +240,7 @@ public class JobCoordinatorServiceTest {
                     .setBootstrapServers("other.servers:9092")
                     .build())
             .build();
+    Source source2 = Source.fromProto(source2Spec);
 
     FeatureSetProto.FeatureSet featureSetSpec1 =
         FeatureSetProto.FeatureSet.newBuilder()
@@ -246,7 +269,7 @@ public class JobCoordinatorServiceTest {
             "name1",
             "",
             Runner.DATAFLOW,
-            feast.core.model.Source.fromProto(source1Spec),
+            source1,
             feast.core.model.Store.fromProto(storeSpec),
             Arrays.asList(featureSet1),
             JobStatus.PENDING);
@@ -256,7 +279,7 @@ public class JobCoordinatorServiceTest {
             "name1",
             "extId1",
             Runner.DATAFLOW,
-            feast.core.model.Source.fromProto(source1Spec),
+            source1,
             feast.core.model.Store.fromProto(storeSpec),
             Arrays.asList(featureSet1),
             JobStatus.RUNNING);
@@ -266,7 +289,7 @@ public class JobCoordinatorServiceTest {
             "",
             "extId2",
             Runner.DATAFLOW,
-            feast.core.model.Source.fromProto(source2Spec),
+            source2,
             feast.core.model.Store.fromProto(storeSpec),
             Arrays.asList(featureSet2),
             JobStatus.PENDING);
@@ -276,7 +299,7 @@ public class JobCoordinatorServiceTest {
             "name2",
             "extId2",
             Runner.DATAFLOW,
-            feast.core.model.Source.fromProto(source2Spec),
+            source2,
             feast.core.model.Store.fromProto(storeSpec),
             Arrays.asList(featureSet2),
             JobStatus.RUNNING);
@@ -284,7 +307,12 @@ public class JobCoordinatorServiceTest {
 
     when(featureSetRepository.findAllByNameLikeAndProject_NameLikeOrderByNameAsc("%", "project1"))
         .thenReturn(Lists.newArrayList(featureSet1, featureSet2));
-
+    when(sourceRepository.findFirstByTypeAndConfigOrderByIdAsc(
+            source1.getType(), source1.getConfig()))
+        .thenReturn(source1);
+    when(sourceRepository.findFirstByTypeAndConfigOrderByIdAsc(
+            source2.getType(), source2.getConfig()))
+        .thenReturn(source2);
     when(specService.listStores(any()))
         .thenReturn(ListStoresResponse.newBuilder().addStore(storeSpec).build());
 
@@ -294,7 +322,12 @@ public class JobCoordinatorServiceTest {
 
     JobCoordinatorService jcs =
         new JobCoordinatorService(
-            jobRepository, featureSetRepository, sourceRepository, specService, jobManager, feastProperties);
+            jobRepository,
+            featureSetRepository,
+            sourceRepository,
+            specService,
+            jobManager,
+            feastProperties);
     jcs.Poll();
 
     verify(jobRepository, times(1)).saveAll(jobArgCaptor.capture());
@@ -302,5 +335,107 @@ public class JobCoordinatorServiceTest {
 
     assertThat(actual.get(0), equalTo(expected1));
     assertThat(actual.get(1), equalTo(expected2));
+  }
+
+  @Test
+  public void shouldGroupJobsBySourceAndIgnoreDuplicateSourceObjects()
+      throws InvalidProtocolBufferException {
+    StoreProto.Store storeSpec =
+        StoreProto.Store.newBuilder()
+            .setName("test")
+            .setType(StoreType.REDIS)
+            .setRedisConfig(RedisConfig.newBuilder().build())
+            .addSubscriptions(Subscription.newBuilder().setProject("project1").setName("*").build())
+            .build();
+    Store store = Store.fromProto(storeSpec);
+
+    // simulate duplicate source objects: create source objects from the same spec but with
+    // different ids
+    SourceProto.Source sourceSpec =
+        SourceProto.Source.newBuilder()
+            .setType(SourceType.KAFKA)
+            .setKafkaSourceConfig(
+                KafkaSourceConfig.newBuilder()
+                    .setTopic("topic")
+                    .setBootstrapServers("servers:9092")
+                    .build())
+            .build();
+    Source source1 = Source.fromProto(sourceSpec);
+    source1.setId(1);
+    Source source2 = Source.fromProto(sourceSpec);
+    source2.setId(2);
+
+    FeatureSetProto.FeatureSet featureSetSpec1 =
+        FeatureSetProto.FeatureSet.newBuilder()
+            .setSpec(
+                FeatureSetSpec.newBuilder()
+                    .setSource(sourceSpec)
+                    .setProject("project1")
+                    .setName("features1"))
+            .setMeta(FeatureSetMeta.newBuilder())
+            .build();
+    FeatureSet featureSet1 = FeatureSet.fromProto(featureSetSpec1);
+    featureSet1.setSource(source1);
+
+    FeatureSetProto.FeatureSet featureSetSpec2 =
+        FeatureSetProto.FeatureSet.newBuilder()
+            .setSpec(
+                FeatureSetSpec.newBuilder()
+                    .setSource(sourceSpec)
+                    .setProject("project1")
+                    .setName("features2"))
+            .setMeta(FeatureSetMeta.newBuilder())
+            .build();
+    FeatureSet featureSet2 = FeatureSet.fromProto(featureSetSpec2);
+    featureSet2.setSource(source2);
+
+    Job expectedInput =
+        new Job(
+            "",
+            "",
+            Runner.DATAFLOW,
+            source1,
+            store,
+            List.of(featureSet1, featureSet2),
+            JobStatus.PENDING);
+    Job expected =
+        new Job(
+            "name",
+            "extid",
+            Runner.DATAFLOW,
+            source1,
+            store,
+            List.of(featureSet1, featureSet2),
+            JobStatus.RUNNING);
+
+    when(featureSetRepository.findAllByNameLikeAndProject_NameLikeOrderByNameAsc("%", "project1"))
+        .thenReturn(Lists.newArrayList(featureSet1, featureSet2));
+    when(sourceRepository.findFirstByTypeAndConfigOrderByIdAsc(
+            source1.getType(), source1.getConfig()))
+        .thenReturn(source1);
+    when(sourceRepository.findFirstByTypeAndConfigOrderByIdAsc(
+            source2.getType(), source2.getConfig()))
+        .thenReturn(source1);
+
+    when(specService.listStores(any()))
+        .thenReturn(ListStoresResponse.newBuilder().addStore(storeSpec).build());
+
+    when(jobManager.startJob(argThat(new JobMatcher(expectedInput)))).thenReturn(expected);
+    when(jobManager.getRunnerType()).thenReturn(Runner.DATAFLOW);
+
+    ArgumentCaptor<List<Job>> jobArgCaptor = ArgumentCaptor.forClass(List.class);
+
+    JobCoordinatorService jcs =
+        new JobCoordinatorService(
+            jobRepository,
+            featureSetRepository,
+            sourceRepository,
+            specService,
+            jobManager,
+            feastProperties);
+    jcs.Poll();
+    verify(jobRepository, times(1)).saveAll(jobArgCaptor.capture());
+    List<Job> actual = jobArgCaptor.getValue();
+    assertThat(actual, equalTo(Collections.singletonList(expected)));
   }
 }

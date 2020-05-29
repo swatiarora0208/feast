@@ -136,8 +136,8 @@ public class Source {
   }
 
   /**
-   * Override equality for sources.
-   * Sources are compared based on their type and type-specific options.
+   * Override equality for sources. Sources are compared based on their type and type-specific
+   * options.
    *
    * @param other other Source
    * @return boolean equal

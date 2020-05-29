@@ -21,6 +21,7 @@ import feast.core.config.FeastProperties;
 import feast.core.config.FeastProperties.JobProperties;
 import feast.core.dao.FeatureSetRepository;
 import feast.core.dao.JobRepository;
+import feast.core.dao.SourceRepository;
 import feast.core.job.JobManager;
 import feast.core.job.JobUpdateTask;
 import feast.core.model.FeatureSet;
@@ -55,6 +56,7 @@ public class JobCoordinatorService {
 
   private final JobRepository jobRepository;
   private final FeatureSetRepository featureSetRepository;
+  private final SourceRepository sourceRepository;
   private final SpecService specService;
   private final JobManager jobManager;
   private final JobProperties jobProperties;
@@ -63,11 +65,13 @@ public class JobCoordinatorService {
   public JobCoordinatorService(
       JobRepository jobRepository,
       FeatureSetRepository featureSetRepository,
+      SourceRepository sourceRepository,
       SpecService specService,
       JobManager jobManager,
       FeastProperties feastProperties) {
     this.jobRepository = jobRepository;
     this.featureSetRepository = featureSetRepository;
+    this.sourceRepository = sourceRepository;
     this.specService = specService;
     this.jobManager = jobManager;
     this.jobProperties = feastProperties.getJobs();
@@ -108,6 +112,11 @@ public class JobCoordinatorService {
           .collect(Collectors.groupingBy(FeatureSet::getSource))
           .forEach(
               (source, setsForSource) -> {
+                // Sources with same type and config in different Feature Sets are different
+                // objects.
+                // Make sure that we are dealing with the same source object when spawning jobs.
+                source = getSurogateSource(source);
+
                 Optional<Job> originalJob = getJob(source, store);
                 jobUpdateTasks.add(
                     new JobUpdateTask(
@@ -188,5 +197,15 @@ public class JobCoordinatorService {
     }
     // return the latest
     return Optional.of(jobs.get(0));
+  }
+
+  /**
+   * Get the surogate source for the given source. Multiple source objects with different ids can
+   * share the same source type and config. This returns the definitive source object for sources
+   * with the same type and config.
+   */
+  private Source getSurogateSource(Source source) {
+    return sourceRepository.findFirstByTypeAndConfigOrderByIdAsc(
+        source.getType(), source.getConfig());
   }
 }

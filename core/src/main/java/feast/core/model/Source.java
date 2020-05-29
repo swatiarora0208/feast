@@ -136,19 +136,13 @@ public class Source {
   }
 
   /**
-   * Override equality for sources. isDefault is always compared first; if both sources are using
-   * the default feature source, they will be equal. If not they will be compared based on their
-   * type-specific options.
+   * Override equality for sources.
+   * Sources are compared based on their type and type-specific options.
    *
    * @param other other Source
    * @return boolean equal
    */
   public boolean equalTo(Source other) {
-    if (other.isDefault() && this.isDefault()
-        || (this.getType() == null && other.getType() == null)) {
-      return true;
-    }
-
     if ((this.getType() == null || !this.getType().equals(other.getType()))) {
       return false;
     }
